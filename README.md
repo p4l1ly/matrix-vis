@@ -29,6 +29,10 @@ dimension.
 
 The input data format is shown in the comprehensive `create_example_data.py`
 
+**Note:** The row labels in the data file (dimension definition) are used only
+in the Qt GUI and in the legend. The input axes in the plot are labelled with
+numbers 0, 1, ...
+
 ## Run the example:
 
 Python 3.7.4 was used for the development. Install the requirements (ideally in
