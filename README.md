@@ -37,3 +37,5 @@ a virtual environment):
 `pip install -r requirements.in`
 
 Then run `python3 create_example_data.py | python3 visualize.py`
+
+![sorry, could not load example screenshot](screenshots/example.png "Example")
