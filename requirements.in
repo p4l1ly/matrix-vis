@@ -1,0 +1,5 @@
+pyside2
+matplotlib
+numpy
+pyyaml
+zmq

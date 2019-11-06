@@ -15,11 +15,21 @@ print(yaml.dump(data['info'], sort_keys=False))
 dimensions = data['dimensions']
 matrix = np.load(BytesIO(base64.b64decode(data['matrix'])))
 
+assert len(dimensions) >= 2
+assert all(len(tics) >= 1 for tics in dimensions.values())
+assert matrix.shape == tuple(len(tics) for tics in dimensions.values())
+
 keys = list(dimensions.keys())
+
 config = [0 for _ in dimensions]
-config[-3] = 'x'
-config[-2] = 'y'
-config[-1] = [(0, 1), (1, 0.4)]
+
+if len(dimensions) >= 3:
+    config[-3] = 'x'
+    config[-2] = 'y'
+    config[-1] = [(0, 1)]
+else:
+    config[-2] = 'y'
+    config[-1] = [(0, 1)]
 
 def plot_data():
     slices = tuple(
@@ -59,7 +69,7 @@ def plot_data():
     else:
         arr = arr*np.array([[x[1]] for x in series])
 
-    labels = [dimensions[keys[series_ix]][i] for i, _ in series]
+    labels = [str(dimensions[keys[series_ix]][i]) for i, _ in series]
 
     xlabel = keys[x_ix]
     ylabel = keys[y_ix] if is_3d else None
