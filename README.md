@@ -34,7 +34,7 @@ The input data format is shown in the comprehensive `create_example_data.py`
 Python 3.7.4 was used for the development. Install the requirements (ideally in
 a virtual environment):
 
-`pip install -r requirements.in`
+`pip install -r requirements.txt`
 
 Then run `python3 create_example_data.py | python3 visualize.py`
 
