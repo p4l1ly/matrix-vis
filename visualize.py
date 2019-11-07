@@ -3,6 +3,7 @@ from io import BytesIO
 import pickle
 import sys
 
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.colors import LightSource, TABLEAU_COLORS
 import mpl_toolkits.mplot3d
@@ -116,19 +117,30 @@ def replot(fig, ax):
 
     return ax
 
+def mypause(interval):
+    backend = plt.rcParams['backend']
+    if backend in matplotlib.rcsetup.interactive_bk:
+        figManager = matplotlib._pylab_helpers.Gcf.get_active()
+        if figManager is not None:
+            canvas = figManager.canvas
+            if canvas.figure.stale:
+                canvas.draw()
+            canvas.start_event_loop(interval)
+            return
 
 def show_plot():
     fig = plt.figure()
-
     ax = replot(fig, None)
 
     ctx = zmq.Context()
     socket = ctx.socket(zmq.REP)
     socket.bind('tcp://0.0.0.0:8989')
 
-    plt.show(block=False)
+    fig.show()
+
     while plt.fignum_exists(fig.number):
-        plt.pause(1)
+        mypause(1)
+
         rs, _, es = zmq.select([socket], [], [socket], timeout=0)
         if rs or es:
             config[:] = pickle.loads(socket.recv())
@@ -138,34 +150,3 @@ def show_plot():
 
 show_plot()
 sys.exit()
-
-from multiprocessing import Process; Process(target=show_plot).start()
-
-
-from PySide2.QtCore import Property, QObject, QUrl, Signal, Slot
-
-ctx = zmq.Context()
-socket = ctx.socket(zmq.REQ)
-socket.connect('tcp://0.0.0.0:8989')
-
-class Py(QObject):
-    def __init__(self):
-        self.points_ = [[0.2, 0.4], [0.4, 0.5]]
-        self.minmax_ = [0, 0, 1, 1]
-        super().__init__()
-
-    @Slot(float, float)
-    def fire(self, x, y):
-        socket.send(pickle.dumps((x, y)))
-        socket.recv()
-
-from PySide2.QtWidgets import QApplication
-from PySide2.QtQml import QQmlApplicationEngine
-
-app = QApplication(sys.argv)
-engine = QQmlApplicationEngine()
-py = Py()
-engine.rootContext().setContextProperty("py", py)
-engine.load(QUrl('main.qml'))
-
-sys.exit(app.exec_())
