@@ -24,25 +24,27 @@ keys = list(dimensions.keys())
 
 config = [0 for _ in dimensions]
 
+SLICE_ALL = slice(None, None, None)
+
 if len(dimensions) >= 3:
-    config[-3] = 'x'
-    config[-2] = 'y'
+    config[-3] = 'x', SLICE_ALL
+    config[-2] = 'y', SLICE_ALL
     config[-1] = [(0, 1)]
 else:
-    config[-2] = 'y'
+    config[-2] = 'y', SLICE_ALL
     config[-1] = [(0, 1)]
 
 def plot_data():
-    slices = tuple(
-        (x if x.__class__ is int else slice(None, None, None))
-        for x in config
+    x_ix = next(i
+        for i, x in enumerate(config)
+        if x.__class__ is tuple and x[0] == 'x'
     )
 
-    arr = matrix[slices]
-    x_ix = next(i for i, x in enumerate(config) if x == 'x')
-
     try:
-        y_ix = next(i for i, x in enumerate(config) if x == 'y')
+        y_ix = next(i
+            for i, x in enumerate(config)
+            if x.__class__ is tuple and x[0] == 'y'
+        )
         is_3d = True
     except StopIteration:
         is_3d = False
@@ -54,6 +56,17 @@ def plot_data():
         for i, x in enumerate(config)
         if x.__class__ is list
     )
+
+    slices = tuple(
+        {
+            int: (lambda x: x),
+            tuple: (lambda x: x[1]),
+            list: (lambda _: SLICE_ALL)
+        }[x.__class__](x)
+        for x in config
+    )
+
+    arr = matrix[slices]
 
     if is_3d:
         ixs = [series_ix, x_ix, y_ix]
@@ -139,7 +152,7 @@ def show_plot():
     fig.show()
 
     while plt.fignum_exists(fig.number):
-        mypause(1)
+        mypause(0.1)
 
         rs, _, es = zmq.select([socket], [], [socket], timeout=0)
         if rs or es:

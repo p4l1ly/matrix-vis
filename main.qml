@@ -10,15 +10,25 @@ ApplicationWindow {
 
   property var sendToPy: function() {
     console.log('sendToPy')
+    // console.log(py.setting)
+    // py.update(setting)
   }
 
   Rectangle {
     anchors { top: parent.top; bottom: footer.top; left: parent.left; right: parent.right }
-
     GridLayout {
       id: radio_controls
       anchors.top: parent.top
       columns: 2
+
+      Text {
+        id: dimLabelDummy
+        Layout.fillWidth: true
+        text: ' '
+        font.pointSize: 20
+        Layout.columnSpan: 2
+      }
+
       Text { text: 'x'; font.bold: true; Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter }
       Button { id: xuncheck; text: 'uncheck'; onClicked: xradios.checkState = Qt.Unchecked }
       Text { text: 'y'; font.bold: true; Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter }
@@ -32,51 +42,62 @@ ApplicationWindow {
     ButtonGroup { id: zradios }
 
     ListView {
+      id: dimList
+
       anchors.left: radio_controls.right
+      anchors.leftMargin: 5
       anchors.top: parent.top
       anchors.bottom: parent.bottom
       anchors.right: parent.right
 
       orientation: Qt.Horizontal
-      spacing: 2
+      spacing: 5
 
-      model: ListModel {
-        ListElement { index: 1 }
-        ListElement { index: 2 }
-        ListElement { index: 3 }
-      }
+      model: py.dimensions
 
       delegate: Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        width: 300
+        width: 200
+
+        Text {
+          id: dimLabel
+          anchors.left: parent.left
+          anchors.right: parent.right
+          text: modelData[0]
+          font.pointSize: dimLabelDummy.font.pointSize
+          horizontalAlignment: Text.AlignHCenter
+        }
 
         RadioButton {
           id: xradio
           ButtonGroup.group: xradios
+          checked: modelData[1][0].val
+          onCheckedChanged: modelData[1][0].val = checked
           checkable: !yradio.checked && ! zradio.checked
           anchors { left: parent.left; right: parent.right }
           y: xuncheck.y
           height: xuncheck.height
-          onCheckedChanged: sendToPy()
         }
         RadioButton {
           id: yradio
           ButtonGroup.group: yradios
+          checked: modelData[1][1].val
+          onCheckedChanged: modelData[1][1].val = checked
           checkable: !xradio.checked && ! zradio.checked
           anchors { left: parent.left; right: parent.right }
           y: yuncheck.y
           height: zuncheck.height
-          onCheckedChanged: sendToPy()
         }
         RadioButton {
           id: zradio
           ButtonGroup.group: zradios
+          checked: modelData[1][2].val
+          onCheckedChanged: modelData[1][2].val = checked
           checkable: !xradio.checked && ! yradio.checked
           anchors { left: parent.left; right: parent.right }
           y: zuncheck.y
           height: zuncheck.height
-          onCheckedChanged: sendToPy()
         }
 
         GridLayout {
@@ -84,24 +105,28 @@ ApplicationWindow {
           anchors.right: parent.right
           anchors.left: parent.left
           anchors.top: zradio.bottom
-          Button { text: "clear"; Layout.fillWidth: true; }
-          Button { text: "invert"; Layout.fillWidth: true; }
+          columnSpacing: 2
+          Button {
+            text: "clear";
+            Layout.fillWidth: true;
+            onClicked: py.clear_dimension(index)
+          }
+          Button {
+            text: "invert";
+            Layout.fillWidth: true;
+            onClicked: py.invert_dimension_filter(index)
+          }
         }
 
         ListView {
           anchors.top: selectionControls.bottom
+          anchors.topMargin: 2
           anchors.bottom: parent.bottom
           width: parent.width
 
           model: DelegateModel {
             id: ticModel
-            model: ListModel {
-              ListElement {txt: "foo"}
-              ListElement {txt: "bar"}
-              ListElement {txt: "baz"}
-            }
-
-            groups: [ DelegateModelGroup {name: "selected"} ]
+            model: modelData[2]
 
             delegate: Component {
               Rectangle {
@@ -113,7 +138,7 @@ ApplicationWindow {
                 }
                 height: 30
 
-                color: DelegateModel.inSelected ? 'lightblue' : 'lightgrey'
+                color: modelData[1].val ? 'lightblue' : 'lightgrey'
                 border.color: '#dddddd'
                 radius: 4
 
@@ -135,9 +160,9 @@ ApplicationWindow {
                   TextInput {
                     anchors.fill: parent
                     validator: DoubleValidator {}
-                    text: "1.0"
+                    text: modelData[2].val
                     verticalAlignment: Text.AlignVCenter
-                    onEditingFinished: sendToPy()
+                    onEditingFinished: modelData[2].val = text
                   }
                 }
 
@@ -151,14 +176,11 @@ ApplicationWindow {
 
                   horizontalAlignment: Text.AlignHCenter
                   verticalAlignment: Text.AlignVCenter
-                  text: txt
+                  text: modelData[0]
 
                   MouseArea {
                     anchors.fill: parent
-                    onClicked: {
-                      item.DelegateModel.inSelected ^= true;
-                      sendToPy()
-                    }
+                    onClicked: modelData[1].val ^= 1
                   }
                 }
               }
@@ -174,15 +196,40 @@ ApplicationWindow {
     anchors { bottom: errmsg.top; left: parent.left; right: parent.right; leftMargin: 2 }
     spacing: 4
 
-    Button { anchors.bottom: parent.bottom; width: parent.width / parent.children.length - 4; text: "Load from file"; Layout.fillWidth: true }
-    Button { anchors.bottom: parent.bottom; width: parent.width / parent.children.length - 4; text: "Save to file"; Layout.fillWidth: true }
-    CheckBox { anchors.bottom: parent.bottom; width: parent.width / parent.children.length - 4; text: "Read from API"; Layout.fillWidth: true }
-    Button { anchors.bottom: parent.bottom; width: parent.width / parent.children.length - 4; text: "Send via API"; Layout.fillWidth: true }
+    Button {
+      anchors.bottom: parent.bottom;
+      width: parent.width / parent.children.length - 4;
+      text: "Load from file";
+      Layout.fillWidth: true
+      onClicked: py.load_from_file()
+    }
+
+    Button {
+      anchors.bottom: parent.bottom;
+      width: parent.width / parent.children.length - 4;
+      text: "Save to file";
+      Layout.fillWidth: true
+      onClicked: py.save_to_file()
+    }
+
+    CheckBox {
+      anchors.bottom: parent.bottom;
+      width: parent.width / parent.children.length - 4;
+      text: "Enable API Read (Not Implemented)";
+      Layout.fillWidth: true
+    }
+
+    Button {
+      anchors.bottom: parent.bottom;
+      width: parent.width / parent.children.length - 4;
+      text: "Send via API (Not Implemented)";
+      Layout.fillWidth: true
+    }
   }
 
   Text {
     id: errmsg
     anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-    text: "foo"
+    text: py.error
   }
 }
