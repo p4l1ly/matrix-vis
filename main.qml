@@ -17,6 +17,7 @@ ApplicationWindow {
 
     GridLayout {
       id: radio_controls
+      anchors.top: parent.top
       columns: 2
       Text { text: 'x'; font.bold: true; Layout.fillWidth: true; horizontalAlignment: Text.AlignHCenter }
       Button { id: xuncheck; text: 'uncheck'; onClicked: xradios.checkState = Qt.Unchecked }
@@ -37,6 +38,7 @@ ApplicationWindow {
       anchors.right: parent.right
 
       orientation: Qt.Horizontal
+      spacing: 2
 
       model: ListModel {
         ListElement { index: 1 }
@@ -77,8 +79,17 @@ ApplicationWindow {
           onCheckedChanged: sendToPy()
         }
 
-        ListView {
+        GridLayout {
+          id: selectionControls
+          anchors.right: parent.right
+          anchors.left: parent.left
           anchors.top: zradio.bottom
+          Button { text: "clear"; Layout.fillWidth: true; }
+          Button { text: "invert"; Layout.fillWidth: true; }
+        }
+
+        ListView {
+          anchors.top: selectionControls.bottom
           anchors.bottom: parent.bottom
           width: parent.width
 
@@ -158,15 +169,15 @@ ApplicationWindow {
     }
   }
 
-  GridLayout {
+  Row {
     id: footer
-    anchors { bottom: errmsg.top; left: parent.left; right: parent.right }
-    columns: 4
+    anchors { bottom: errmsg.top; left: parent.left; right: parent.right; leftMargin: 2 }
+    spacing: 4
 
-    Button { width: footer.cellWidth; text: "Load from file"; Layout.fillWidth: true }
-    Button { width: footer.cellWidth; text: "Save to file"; Layout.fillWidth: true }
-    CheckBox { width: footer.cellWidth; text: "Read from API"; Layout.fillWidth: true }
-    Button { width: footer.cellWidth; text: "Send via API"; Layout.fillWidth: true }
+    Button { anchors.bottom: parent.bottom; width: parent.width / parent.children.length - 4; text: "Load from file"; Layout.fillWidth: true }
+    Button { anchors.bottom: parent.bottom; width: parent.width / parent.children.length - 4; text: "Save to file"; Layout.fillWidth: true }
+    CheckBox { anchors.bottom: parent.bottom; width: parent.width / parent.children.length - 4; text: "Read from API"; Layout.fillWidth: true }
+    Button { anchors.bottom: parent.bottom; width: parent.width / parent.children.length - 4; text: "Send via API"; Layout.fillWidth: true }
   }
 
   Text {
