@@ -10,8 +10,10 @@ the y axis (and the last dimension is set as data series list, see the
 sequel), see the lines
 
 ```
-config[-3] = 'x'
-config[-2] = 'y'
+# we can filter row indices using e.g. [1, 3] instead of SLICE_ALL
+SLICE_ALL = slice(None, None, None)
+config[-3] = 'x', SLICE_ALL
+config[-2] = 'y', SLICE_ALL
 ```
 
 One dimension is chosen as the list of data series. The data series can be
@@ -23,9 +25,8 @@ In our example config, the indexes are set to zeroes:
 
 `config = [0 for _ in dimensions]`
 
-This configuration is for now fixed in the code (see the `config` variable), but
-soon it will be modifiable via Qt GUI. If you want 2D graph, do not set the 'y'
-dimension.
+This configuration can be fixed in the code (see the `config` variable), but
+you can also dynamically control the graph via Qt GUI (`configurator.py`).
 
 The input data format is shown in the comprehensive `create_example_data.py`
 
@@ -40,6 +41,14 @@ a virtual environment):
 
 `pip install -r requirements.txt`
 
-Then run `python3 create_example_data.py | python3 visualize.py`
+Open two terminals and run each of the following commands in one of them:
 
-![sorry, could not load example screenshot](screenshots/example.png "Example")
+`python3 create_example_data.py | python3 visualize.py`
+
+`python3 create_example_data.py | python3 configurator.py`
+
+![sorry, could not load example screenshot](screenshots/example-3d.png "3D
+Example")
+
+![sorry, could not load example screenshot](screenshots/example-2d.png "2D
+Example")
