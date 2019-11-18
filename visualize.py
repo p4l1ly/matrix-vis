@@ -14,7 +14,10 @@ import zmq
 data = yaml.load(sys.stdin.read(), Loader=yaml.FullLoader)
 print(yaml.dump(data['info'], sort_keys=False))
 dimensions = data['dimensions']
-matrix = np.load(BytesIO(base64.b64decode(data['matrix'])))
+if 'matrix_numpy' in data:
+    matrix = np.load(BytesIO(base64.b64decode(data['matrix_numpy'])))
+else:
+    matrix = np.array(data['matrix'])
 
 assert len(dimensions) >= 2
 assert all(len(tics) >= 1 for tics in dimensions.values())

@@ -52,3 +52,14 @@ Example")
 
 ![sorry, could not load example screenshot](screenshots/example-2d.png "2D
 Example")
+
+
+### Second format
+
+If you don't like the `create_example_data.py` approach because of the binary
+b64-encoded numpy data inside, feel free to express your data using a more
+JSONic way, as in `example.json`:
+
+`cat example.json | python3 visualize.py`
+
+`cat example.json | python3 configurator.py`

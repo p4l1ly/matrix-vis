@@ -42,7 +42,7 @@ result = yaml.dump({
         'z': ['1', '2', '3'],
         'a': ['foo', 'bar', 'baz']
     },
-    'matrix': base64.b64encode(file.getvalue()).decode('ascii')
+    'matrix_numpy': base64.b64encode(file.getvalue()).decode('ascii'),
 }, sort_keys=False)
 
 print(result)
