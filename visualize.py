@@ -8,15 +8,27 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LightSource, TABLEAU_COLORS
 import mpl_toolkits.mplot3d
 import numpy as np
-import yaml
+import re
+import json
+import ruamel.yaml
 import zmq
 
-data = yaml.load(sys.stdin.read(), Loader=yaml.FullLoader)
-print(yaml.dump(data['info'], sort_keys=False))
+def flatten(l):
+    for el in l:
+        if el.__class__ is list:
+            yield from flatten(el)
+        else:
+            yield el
+
+data = ruamel.yaml.load(sys.stdin, Loader=ruamel.yaml.Loader)
+ruamel.yaml.round_trip_dump(data['info'], sys.stdout)
 dimensions = data['dimensions']
 if 'matrix_numpy' in data:
     matrix = np.load(BytesIO(base64.b64decode(data['matrix_numpy'])))
 else:
+    for x in flatten(data['matrix']):
+        assert x.__class__ in [int, float], Exception(f'Not a number {repr(x)}')
+
     matrix = np.array(data['matrix'])
 
 assert len(dimensions) >= 2

@@ -4,11 +4,11 @@ import sys
 import traceback
 
 from PySide2.QtCore import Property, QObject, QUrl, Signal, Slot
-import yaml
+import ruamel.yaml
 import zmq
 
-data = yaml.load(sys.stdin.read(), Loader=yaml.FullLoader)
-print(yaml.dump(data['info'], sort_keys=False))
+data = ruamel.yaml.load(sys.stdin.read(), Loader=ruamel.yaml.Loader)
+ruamel.yaml.round_trip_dump(sys.stdin.read(), sys.stdout)
 dimensions = [[name, tics] for name, tics in data['dimensions'].items()]
 
 ctx = zmq.Context()

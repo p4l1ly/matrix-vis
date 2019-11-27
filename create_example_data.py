@@ -1,8 +1,9 @@
 import base64
 from io import BytesIO
+import ruamel.yaml
+import sys
 
 import numpy as np
-import yaml
 
 matrix = np.array([
     [
@@ -34,7 +35,7 @@ matrix = np.array([
 file = BytesIO()
 np.save(file, matrix)
 
-result = yaml.dump({
+result = ruamel.yaml.round_trip_dump({
     'info': 'This is a useless example',
     'dimensions': {
         'x': ['3', '5'],
@@ -43,6 +44,4 @@ result = yaml.dump({
         'a': ['foo', 'bar', 'baz']
     },
     'matrix_numpy': base64.b64encode(file.getvalue()).decode('ascii'),
-}, sort_keys=False)
-
-print(result)
+}, sys.stdout)
